@@ -1,6 +1,5 @@
 # Electrochemical Cell Simulation
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/)
 
 This project simulates an electrochemical cell (Volta Cell) using CreateJS. Users can drag and drop electrodes to designated positions to observe the corresponding voltmeter readings and animations.
 
