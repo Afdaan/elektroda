@@ -552,13 +552,49 @@
 		});
 	
 		function updateScore(idx) {
+			// Reset elektroda yang sedang aktif
+			obyeks.forEach(obj => {
+				// Cek dengan tolerance yang lebih besar
+				const isAtAnoda = Math.abs(obj.x - that.kotak.x) < 50 && 
+								 Math.abs(obj.y - that.kotak.y) < 50;
+				
+				if (isAtAnoda) {
+					console.log("Resetting electrode at position:", obj.x, obj.y); // Debug
+					// Reset ke posisi awal
+					obj.x = obj.initX;
+					obj.y = obj.initY;
+					obj.mouseEnabled = true;
+					obj.visible = true;
+					obj.alpha = 1;
+					
+					// Re-attach drag events dengan cara yang benar
+					obj.removeAllEventListeners();
+					obj.addEventListener("mousedown", handleMouseDown);
+					obj.addEventListener("pressup", handlePressUp);
+				}
+			});
+		
+			// Set elektroda baru
+			const newElektroda = obyeks[idx];
+			newElektroda.x = that.kotak.x;
+			newElektroda.y = that.kotak.y;
+			newElektroda.mouseEnabled = false;
+			newElektroda.visible = true;
+			newElektroda.alpha = 1;
+		
+			// Jalankan animasi
 			that.elektron.visible = true;
 			that.elektron.gotoAndPlay(1);
 			
 			that.panah.visible = true;
-			that.panah.play(); // Cukup play() aja, gak perlu pake stop
-			// Hapus event listener complete karena kita mau loop
-			
+			that.panah.play();
+		
+			 // Reset dan update voltmeter
+			that.nilaimg.visible = false;
+			that.nilaimn.visible = false;
+			that.nilaizn.visible = false;
+			that.nilaipb.visible = false;
+		
 			switch(idx) {
 				case 0: that.nilaimg.visible = true; break;
 				case 1: that.nilaimn.visible = true; break;
@@ -566,9 +602,50 @@
 				case 3: that.nilaipb.visible = true; break;
 			}
 			
-			obyeks[idx].mouseEnabled = false;
 			that.tombolulang.alpha = 1;
 			that.tombolulang.mouseEnabled = true;
+			
+			// Force update
+			createjs.Ticker.addEventListener("tick", that.stage);
+			that.stage.update();
+		}
+		
+		// Helper functions for drag events
+		function handleMouseDown(e) {
+			if (!e.currentTarget.initX) {
+				e.currentTarget.initX = e.currentTarget.x;
+				e.currentTarget.initY = e.currentTarget.y;
+			}
+			
+			let offset = {
+				x: e.currentTarget.x - e.stageX,
+				y: e.currentTarget.y - e.stageY
+			};
+			
+			e.currentTarget.on("pressmove", function(moveEvent) {
+				moveEvent.currentTarget.x = moveEvent.stageX + offset.x;
+				moveEvent.currentTarget.y = moveEvent.stageY + offset.y;
+				that.stage.update();
+			});
+i		}
+		
+		function handlePressUp(e) {
+			e.currentTarget.removeAllEventListeners("pressmove");
+			
+			// Check collision with box
+			boxs.forEach(box => {
+				if (Math.abs(e.currentTarget.x - box.x) < 50 && 
+					Math.abs(e.currentTarget.y - box.y) < 50) {
+					e.currentTarget.x = box.x;
+					e.currentTarget.y = box.y;
+					updateScore(obyeks.indexOf(e.currentTarget));
+				} else {
+					e.currentTarget.x = e.currentTarget.initX;
+					e.currentTarget.y = e.currentTarget.initY;
+				}
+			});
+			
+			that.stage.update();
 		}
 	
 		function resetState() {
@@ -730,8 +807,8 @@
 	// Modify library properties to add better rendering settings
 	lib.properties = {
 		id: 'E81AEE61416D73498E951682DDD43845',
-		width: 1280,
-		height: 720,
+		width: 1280,  // Fixed width
+		height: 720,  // Fixed height
 		fps: 45,
 		color: "#FFFFFF",
 		opacity: 1.00,
@@ -755,6 +832,15 @@
 		
 		createjs.Ticker.framerate = lib.properties.fps;
 		createjs.Ticker.addEventListener("tick", stage);
+	});
+	
+	// Add resize handler
+	window.addEventListener('resize', function() {
+		lib.properties.width = window.innerWidth;
+		lib.properties.height = window.innerHeight;
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		stage.update();
 	});
 	
 	// bootstrap callback support:
@@ -807,52 +893,45 @@
 	}
 	
 	
-	an.makeResponsive = function(isResp, respDim, isScale, scaleType, domContainers) {		
-		var lastW, lastH, lastS=1;		
-		window.addEventListener('resize', resizeCanvas);		
-		resizeCanvas();		
-		function resizeCanvas() {			
-			var w = lib.properties.width, h = lib.properties.height;			
-			var iw = window.innerWidth, ih=window.innerHeight;			
-			var pRatio = window.devicePixelRatio || 1, xRatio=iw/w, yRatio=ih/h, sRatio=1;			
-			if(isResp) {                
-				if((respDim=='width'&&lastW==iw) || (respDim=='height'&&lastH==ih)) {                    
-					sRatio = lastS;                
-				}				
-				else if(!isScale) {					
-					if(iw<w || ih<h)						
-						sRatio = Math.min(xRatio, yRatio);				
-				}				
-				else if(scaleType==1) {					
-					sRatio = Math.min(xRatio, yRatio);				
-				}				
-				else if(scaleType==2) {					
-					sRatio = Math.max(xRatio, yRatio);				
-				}			
+	an.makeResponsive = function(isResp, respDim, isScale, scaleType, domContainers) {        
+		var lastW, lastH, lastS=1;        
+		window.addEventListener('resize', resizeCanvas);        
+		resizeCanvas();        
+		
+		function resizeCanvas() {
+			// Get container
+			var canvasContainer = document.getElementById('animation_container');
+			
+			// Get available height (95vh)
+			var availableHeight = window.innerHeight * 0.95;
+			
+			// Calculate width based on 16:9 ratio
+			var targetWidth = (availableHeight * 16) / 9;
+			
+			// If width is too wide, constrain by width instead
+			if (targetWidth > window.innerWidth) {
+				targetWidth = window.innerWidth;
+				availableHeight = (targetWidth * 9) / 16;
 			}
 			
-			// Add RAF for smoother resize
-			if(!window.requestAnimationFrame) {
-				window.requestAnimationFrame = function(callback) {
-					return setTimeout(callback, 1000/60);
-				}
-			}
-	
-			window.requestAnimationFrame(function() {
-				domContainers[0].width = w * pRatio * sRatio;            
-				domContainers[0].height = h * pRatio * sRatio;
-				domContainers.forEach(function(container) {                
-					container.style.width = w * sRatio + 'px';                
-					container.style.height = h * sRatio + 'px';            
-				});
-				stage.scaleX = pRatio*sRatio;            
-				stage.scaleY = pRatio*sRatio;
-				
-				// Batch updates
-				stage.tickOnUpdate = false;            
-				stage.update();            
-				stage.tickOnUpdate = true;
-			});
+			// Set container size
+			canvasContainer.style.width = targetWidth + 'px';
+			canvasContainer.style.height = availableHeight + 'px';
+			
+			// Calculate scale
+			var scaleX = targetWidth / 1280;
+			var scaleY = availableHeight / 720;
+			
+			// Use same scale for both dimensions to maintain proportions
+			stage.scaleX = scaleX;
+			stage.scaleY = scaleY;
+			
+			// Update canvas size
+			canvas.width = targetWidth;
+			canvas.height = availableHeight;
+			
+			// Force update
+			stage.update();
 		}
 	}
 	
