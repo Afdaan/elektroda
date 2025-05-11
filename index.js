@@ -414,8 +414,8 @@
 	
 	
 	(lib.Tombolgerak = function(mode,startPosition,loop,reversed) {
-	if (loop == null) { loop = true; }
-	if (reversed == null) { loop = false; }
+	if (loop == null) { loop = true; } // Ubah ke true untuk loop
+	if (reversed == null) { reversed = false; }
 		var props = new Object();
 		props.mode = mode;
 		props.startPosition = startPosition;
@@ -426,22 +426,22 @@
 	
 		// Layer_1
 		this.instance = new lib.Tween3("synched",0);
-	
 		this.instance_1 = new lib.Tween4("synched",0);
 		this.instance_1.setTransform(-28,0);
 	
-		this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.instance}]}).to({state:[{t:this.instance_1}]},4).wait(1));
-		this.timeline.addTween(cjs.Tween.get(this.instance).to({_off:true,x:-28},4).wait(1));
+		// Bikin timeline yang loop
+		this.timeline.addTween(cjs.Tween.get(this.instance)
+			.to({x:-28}, 10) // Gerak ke kiri
+			.to({x:0}, 10) // Balik ke posisi awal
+			.wait(1));
 	
 		this._renderFirstFrame();
-	
 	}).prototype = p = new cjs.MovieClip();
-	p.nominalBounds = new cjs.Rectangle(-43,-10,58,20);
 	
 	
 	(lib.Elektrongerak = function(mode,startPosition,loop,reversed) {
 	if (loop == null) { loop = true; }
-	if (reversed == null) { loop = false; }
+	if (reversed == null) { loop = true; }
 		var props = new Object();
 		props.mode = mode;
 		props.startPosition = startPosition;
@@ -556,7 +556,8 @@
 			that.elektron.gotoAndPlay(1);
 			
 			that.panah.visible = true;
-			that.panah.gotoAndPlay(1);
+			that.panah.play(); // Cukup play() aja, gak perlu pake stop
+			// Hapus event listener complete karena kita mau loop
 			
 			switch(idx) {
 				case 0: that.nilaimg.visible = true; break;
@@ -623,7 +624,7 @@
 			
 			// Reset button state
 			that.tombolulang.alpha = 0.3;
-			that.tombolulang.mouseEnabled = false;
+			that.tombolulang.mouseEnabled = true;
 			
 			// Force stage update
 			that.stage.update();
@@ -731,7 +732,7 @@
 		id: 'E81AEE61416D73498E951682DDD43845',
 		width: 1280,
 		height: 720,
-		fps: 60,
+		fps: 45,
 		color: "#FFFFFF",
 		opacity: 1.00,
 		manifest: [
