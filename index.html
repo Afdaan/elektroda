@@ -107,5 +107,91 @@
 			<canvas id="canvas"></canvas>
 			<div id="dom_overlay_container"></div>
 		</div>
+		<button id="howToUseBtn" style="position:fixed;top:20px;right:20px;z-index:1000;">How to Use</button>
+		<div id="howToUseModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:2000;justify-content:center;align-items:center;">
+			<div style="background:#fff;padding:24px 32px;border-radius:8px;max-width:400px;box-shadow:0 2px 8px #0003;position:relative;">
+				<button id="closeHowToUse" style="position:absolute;top:8px;right:8px;">&times;</button>
+				<h2>Petunjuk Penggunaan</h2>
+				<ol style="font-size:16px;">
+					<li>Klik tombol <b>Mulai</b> untuk memulai simulasi.</li>
+					<li>Drag & drop elektroda (Mg, Mn, Zn, Pb) ke kotak yang telah di sesuaikan.</li>
+					<li>Setelah elektroda ditempatkan, animasi dan nilai voltmeter akan muncul.</li>
+					<li>Untuk mencoba elektroda lain, klik tombol <b>Ulang</b> lalu ulangi langkah 2.</li>
+				</ol>
+			</div>
+		</div>
+		<script>
+			// Tambahkan error handling
+			window.addEventListener('error', function(e) {
+				console.error('Error:', e.message);
+			});
+			
+			// Pastikan assets loaded
+			function checkAssetsLoaded() {
+				if (!createjs || !AdobeAn) {
+					console.error('Required libraries not loaded');
+					return false;
+				}
+				return true;
+			}
+
+			var canvas, stage, exportRoot, anim_container, dom_overlay_container, fnStartAnimation;
+			function init() {
+				if (!checkAssetsLoaded()) return;
+				
+				canvas = document.getElementById("canvas");
+				if (!canvas) {
+					console.error('Canvas not found');
+					return;
+				}
+				anim_container = document.getElementById("animation_container");
+				dom_overlay_container = document.getElementById("dom_overlay_container");
+				var comp=AdobeAn.getComposition("E81AEE61416D73498E951682DDD43845");
+				var lib=comp.getLibrary();
+				var loader = new createjs.LoadQueue(false);
+				loader.addEventListener("fileload", function(evt){handleFileLoad(evt,comp)});
+				loader.addEventListener("complete", function(evt){handleComplete(evt,comp)});
+				var lib=comp.getLibrary();
+				loader.loadManifest(lib.properties.manifest);
+			}
+			function handleFileLoad(evt, comp) {
+					var images=comp.getImages();	
+					if (evt && (evt.item.type == "image")) { images[evt.item.id] = evt.result; }	
+			}
+			function handleComplete(evt,comp) {
+					//This function is always called, irrespective of the content. You can use the variable "stage" after it is created in token create_stage.
+					var lib=comp.getLibrary();
+					var ss=comp.getSpriteSheet();
+					var queue = evt.target;
+					var ssMetadata = lib.ssMetadata;
+					for(i=0; i<ssMetadata.length; i++) {
+								ss[ssMetadata[i].name] = new createjs.SpriteSheet( {"images": [queue.getResult(ssMetadata[i].name)], "frames": ssMetadata[i].frames} )
+							}
+					exportRoot = new lib.VLAB_HTML5Canvas();
+					stage = new lib.Stage(canvas);
+					stage.enableMouseOver();	
+					//Registers the "tick" event listener.
+					fnStartAnimation = function() {
+								stage.addChild(exportRoot);
+								createjs.Ticker.framerate = lib.properties.fps;
+								createjs.Ticker.addEventListener("tick", stage);
+							}	    
+					//Code to support hidpi screens and responsive scaling.
+					AdobeAn.makeResponsive(false,'both',false,1,[canvas,anim_container,dom_overlay_container]);	
+					AdobeAn.compositionLoaded(lib.properties.id);
+					fnStartAnimation();
+			}
+
+			document.getElementById('howToUseBtn').onclick = function() {
+				document.getElementById('howToUseModal').style.display = 'flex';
+			};
+			document.getElementById('closeHowToUse').onclick = function() {
+				document.getElementById('howToUseModal').style.display = 'none';
+			};
+			// Optional: close modal if click outside content
+			document.getElementById('howToUseModal').onclick = function(e) {
+				if (e.target === this) this.style.display = 'none';
+			};
+		</script>
 	</body>
 </html>
