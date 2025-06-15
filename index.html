@@ -1,33 +1,191 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>VLAB Electroda</title>
+		<!-- Add favicon -->
+		<link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%234e73df' d='M14 5c.6 0 1 .4 1 1v12c0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1V6c0-.6.4-1 1-1h10M14 3H4C2.3 3 1 4.3 1 6v12c0 1.7 1.3 3 3 3h10c1.7 0 3-1.3 3-3V6c0-1.7-1.3-3-3-3zm6 4v1h-2V7h2zm0 3v1h-2v-1h2zm-2 5v-1h2v1h-2zm2 3v1h-2v-1h2z'/%3E%3C/svg%3E" type="image/svg+xml">
+		<!-- Add Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 		<style>
+			/* Theme Variables */
+			:root {
+				/* Light Theme (default) */
+				--bg-color: #f8f9fa;
+				--bg-container: #fff;
+				--text-color: #333;
+				--text-secondary: #666;
+				--border-color: #eee;
+				--header-bg: #fff;
+				--footer-bg: rgba(255,255,255,0.9);
+				--shadow-color: rgba(0,0,0,0.12);
+				--shadow-color-strong: rgba(0,0,0,0.25);
+				--primary-color: #4e73df;
+				--primary-dark: #3a5fc8;
+				--button-highlighted: #f0f5ff;
+				--loader-ring: #eee;
+				--modal-overlay: rgba(0,0,0,0.6);
+				--close-button-bg: #f0f0f0;
+				--close-button-hover: #e0e0e0;
+				--footer-text: #777;
+			}
+			
+			/* Dark Theme */
+			html[data-theme="dark"] {
+				--bg-color: #1a1a2e;
+				--bg-container: #232339;
+				--text-color: #e1e1e6;
+				--text-secondary: #a0a0a7;
+				--border-color: #3a3a59;
+				--header-bg: #16162c;
+				--footer-bg: rgba(22, 22, 44, 0.9);
+				--shadow-color: rgba(0,0,0,0.25);
+				--shadow-color-strong: rgba(0,0,0,0.4);
+				--primary-color: #6583e2;
+				--primary-dark: #5270d5;
+				--button-highlighted: #2a325e;
+				--loader-ring: #333355;
+				--modal-overlay: rgba(0,0,0,0.8);
+				--close-button-bg: #32324c;
+				--close-button-hover: #3e3e5c;
+				--footer-text: #8e8ea0;
+			}
+			
+			/* Transition for smooth theme change */
+			* {
+				transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+			}
+
 			html, body {
 				margin: 0;
 				padding: 0;
 				width: 100%;
 				height: 100vh;
 				overflow: hidden;
-				background-color: #fff;
+				background-color: var(--bg-color);
+				font-family: 'Poppins', sans-serif;
+				color: var(--text-color);
 			}
+
+			/* Header styling */
+			.app-header {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: 60px;
+				background: var(--header-bg);
+				box-shadow: 0 1px 3px var(--shadow-color);
+				display: flex;
+				align-items: center;
+				padding: 0 20px;
+				z-index: 100;
+				justify-content: space-between;
+			}
+			
+			.app-header-left {
+				display: flex;
+				align-items: center;
+			}
+			
+			.app-header-right {
+				display: flex;
+				align-items: center;
+				gap: 15px;
+			}
+			
+			.app-header h1 {
+				font-weight: 600;
+				font-size: 20px;
+				margin: 0;
+				color: var(--text-color);
+			}
+			
+			.app-header .logo {
+				width: 30px;
+				height: 30px;
+				margin-right: 10px;
+				background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 8px;
+				color: #fff;
+				font-weight: 600;
+				box-shadow: 0 2px 5px rgba(78,115,223,0.3);
+			}
+			
+			 /* Theme toggle button - improved */
+			.theme-switch {
+				display: flex;
+				align-items: center;
+			}
+			
+			.theme-switch-button {
+				width: 56px;
+				height: 28px;
+				border-radius: 28px;
+				background: var(--bg-color);
+				border: 2px solid var(--border-color);
+				position: relative;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				padding: 0 6px;
+				justify-content: space-between;
+				box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+			}
+			
+			.theme-icon {
+				font-size: 15px;
+				z-index: 1;
+				pointer-events: none;
+				margin-top: 2px;
+			}
+			
+			.theme-switch-slider {
+				position: absolute;
+				width: 20px;
+				height: 20px;
+				border-radius: 50%;
+				background: var(--primary-color);
+				left: 4px;
+				transition: transform 0.3s;
+				box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+				pointer-events: none;
+			}
+			
+			html[data-theme="dark"] .theme-switch-slider {
+				transform: translateX(26px);
+			}
+			
+			/* Main container styling */
 			#animation_container {
 				position: absolute;
 				left: 50%;
 				top: 50%;
 				transform: translate(-50%, -50%);
 				width: auto !important;
-				height: 95vh !important; /* Use 95% of viewport height */
-				aspect-ratio: 16/9;      /* Maintain 16:9 ratio */
+				height: 95vh !important;
+				max-height: calc(100vh - 100px);
+				aspect-ratio: 16/9; 
+				border-radius: 12px;
+				overflow: hidden;
+				box-shadow: 0 8px 30px var(--shadow-color);
+				background: var(--bg-container);
 			}
+			
 			#canvas {
 				position: absolute;
 				width: 100% !important;
 				height: 100% !important;
 				display: block;
+				border-radius: 12px;
 			}
+			
 			#dom_overlay_container {
 				position: absolute;
 				left: 0;
@@ -35,6 +193,195 @@
 				width: 100% !important;
 				height: 100% !important;
 				pointer-events: none;
+			}
+			
+			/* Loading animation */
+			.loader-container {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: var(--bg-color);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				z-index: 9999;
+				transition: opacity 0.5s ease, visibility 0.5s ease;
+			}
+			
+			.loader-container.hidden {
+				opacity: 0;
+				visibility: hidden;
+			}
+			
+			.loader {
+				width: 48px;
+				height: 48px;
+				border: 5px solid var(--loader-ring);
+				border-radius: 50%;
+				position: relative;
+				box-sizing: border-box;
+				animation: rotation 1s linear infinite;
+			}
+			
+			.loader::after {
+				content: '';  
+				box-sizing: border-box;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				width: 40px;
+				height: 40px;
+				border-radius: 50%;
+				border: 5px solid transparent;
+				border-bottom-color: var(--primary-color);
+			}
+			
+			@keyframes rotation {
+				0% { transform: rotate(0deg) }
+				100% { transform: rotate(360deg) }
+			} 
+			
+			.loader-text {
+				margin-top: 20px;
+				font-size: 16px;
+				color: var(--text-secondary);
+				letter-spacing: 0.5px;
+			}
+
+			/* Footer styling */
+			.app-footer {
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				padding: 10px 20px;
+				background: var(--footer-bg);
+				font-size: 12px;
+				text-align: center;
+				color: var(--footer-text);
+				box-shadow: 0 -1px 3px var(--shadow-color);
+				backdrop-filter: blur(5px);
+				z-index: 90;
+			}
+
+			/* Styled button and modal */
+			#howToUseBtn {
+				z-index: 1000;
+				padding: 8px 15px;
+				background: linear-gradient(to bottom, var(--primary-color), var(--primary-dark));
+				color: white;
+				border: none;
+				border-radius: 50px;
+				font-family: 'Poppins', sans-serif;
+				font-size: 13px;
+				font-weight: 500;
+				cursor: pointer;
+				box-shadow: 0 2px 10px var(--shadow-color);
+				transition: all 0.2s ease;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			
+			#howToUseBtn:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 4px 12px var(--shadow-color-strong);
+				background: linear-gradient(to bottom, #5a7de4, #4a6ad3);
+			}
+			
+			#howToUseBtn:active {
+				transform: translateY(1px);
+				box-shadow: 0 2px 6px var(--shadow-color);
+			}
+			
+			#howToUseModal {
+				display: none;
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				background: var(--modal-overlay);
+				z-index: 2000;
+				justify-content: center;
+				align-items: center;
+				opacity: 0;
+				transition: opacity 0.3s ease;
+			}
+			
+			#howToUseModal.visible {
+				opacity: 1;
+			}
+			
+			.modal-content {
+				background: var(--bg-container);
+				padding: 28px 32px;
+				border-radius: 12px;
+				max-width: 450px;
+				box-shadow: 0 5px 25px var(--shadow-color-strong);
+				position: relative;
+				transform: translateY(20px);
+				transition: transform 0.3s ease;
+			}
+			
+			#howToUseModal.visible .modal-content {
+				transform: translateY(0);
+			}
+			
+			#closeHowToUse {
+				position: absolute;
+				top: 12px;
+				right: 12px;
+				background: var(--close-button-bg);
+				border: none;
+				width: 28px;
+				height: 28px;
+				border-radius: 50%;
+				font-size: 18px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				cursor: pointer;
+				transition: background 0.2s;
+				color: var(--text-color);
+			}
+			
+			#closeHowToUse:hover {
+				background: var(--close-button-hover);
+			}
+			
+			.modal-content h2 {
+				margin-top: 0;
+				color: var(--text-color);
+				font-family: 'Poppins', sans-serif;
+				font-size: 22px;
+				font-weight: 600;
+				padding-bottom: 10px;
+				border-bottom: 1px solid var(--border-color);
+			}
+			
+			.modal-content ol {
+				font-size: 15px;
+				color: var(--text-color);
+				line-height: 1.6;
+				padding-left: 24px;
+				margin-bottom: 5px;
+			}
+			
+			.modal-content li {
+				margin-bottom: 12px;
+			}
+			
+			.modal-content b {
+				background: var(--button-highlighted);
+				padding: 2px 5px;
+				border-radius: 3px;
+				font-weight: 600;
+				color: var(--primary-color);
 			}
 		</style>
 		<script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
@@ -103,16 +450,40 @@
 		</script>
 	</head>
 	<body onload="init();">
+		<!-- Loading overlay -->
+		<div class="loader-container" id="loaderContainer">
+			<div class="loader"></div>
+			<div class="loader-text">Loading Simulation...</div>
+		</div>
+		
+		<!-- Header with reorganized layout -->
+		<header class="app-header">
+			<div class="app-header-left">
+				<div class="logo">V</div>
+				<h1>Virtual Lab Electroda</h1>
+			</div>
+			<div class="app-header-right">
+				<div class="theme-switch">
+					<div class="theme-switch-button" id="themeToggle">
+						<span class="theme-icon">☀️</span>
+						<span class="theme-icon">🌙</span>
+						<div class="theme-switch-slider"></div>
+					</div>
+				</div>
+				<button id="howToUseBtn"><span class="icon">ℹ️</span> Petunjuk Penggunaan</button>
+			</div>
+		</header>
+		
 		<div id="animation_container">
 			<canvas id="canvas"></canvas>
 			<div id="dom_overlay_container"></div>
 		</div>
-		<button id="howToUseBtn" style="position:fixed;top:20px;right:20px;z-index:1000;">How to Use</button>
-		<div id="howToUseModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:2000;justify-content:center;align-items:center;">
-			<div style="background:#fff;padding:24px 32px;border-radius:8px;max-width:400px;box-shadow:0 2px 8px #0003;position:relative;">
-				<button id="closeHowToUse" style="position:absolute;top:8px;right:8px;">&times;</button>
+		
+		<div id="howToUseModal">
+			<div class="modal-content">
+				<button id="closeHowToUse">&times;</button>
 				<h2>Petunjuk Penggunaan</h2>
-				<ol style="font-size:16px;">
+				<ol>
 					<li>Klik tombol <b>Mulai</b> untuk memulai simulasi.</li>
 					<li>Drag & drop elektroda (Mg, Mn, Zn, Pb) ke kotak yang telah di sesuaikan.</li>
 					<li>Setelah elektroda ditempatkan, animasi dan nilai voltmeter akan muncul.</li>
@@ -120,78 +491,102 @@
 				</ol>
 			</div>
 		</div>
+		
+		<!-- Footer -->
+		<footer class="app-footer">
+			&copy; 2025 Virtual Lab Electroda | Version 1.0
+		</footer>
+		
 		<script>
-			// Tambahkan error handling
-			window.addEventListener('error', function(e) {
-				console.error('Error:', e.message);
-			});
-			
-			// Pastikan assets loaded
-			function checkAssetsLoaded() {
-				if (!createjs || !AdobeAn) {
-					console.error('Required libraries not loaded');
-					return false;
-				}
-				return true;
-			}
-
-			var canvas, stage, exportRoot, anim_container, dom_overlay_container, fnStartAnimation;
-			function init() {
-				if (!checkAssetsLoaded()) return;
+			// Set up the modal functionality after DOM is fully loaded
+			document.addEventListener('DOMContentLoaded', function() {
+				// Get button and modal elements
+				var howToUseBtn = document.getElementById('howToUseBtn');
+				var howToUseModal = document.getElementById('howToUseModal');
+				var closeHowToUse = document.getElementById('closeHowToUse');
 				
-				canvas = document.getElementById("canvas");
-				if (!canvas) {
-					console.error('Canvas not found');
-					return;
+				// Add button click event
+				howToUseBtn.addEventListener('click', function() {
+					howToUseModal.style.display = 'flex';
+					// Add small delay before adding the visible class to trigger animation
+					setTimeout(function() {
+						howToUseModal.classList.add('visible');
+					}, 10);
+				});
+				
+				// Add close button click event
+				closeHowToUse.addEventListener('click', function() {
+					howToUseModal.classList.remove('visible');
+					// Add delay to wait for fade out animation before hiding
+					setTimeout(function() {
+						howToUseModal.style.display = 'none';
+					}, 300);
+				});
+				
+				// Close modal if click outside content
+				howToUseModal.addEventListener('click', function(e) {
+					if (e.target === this) {
+						this.classList.remove('visible');
+						setTimeout(function() {
+							howToUseModal.style.display = 'none';
+						}, 300);
+					}
+				});
+				
+				// Theme toggle functionality - improved with debugging
+				const themeToggle = document.getElementById('themeToggle');
+				const htmlElement = document.documentElement;
+				
+				if (!themeToggle) {
+					console.error('Theme toggle button not found!');
+				} else {
+					console.log('Theme toggle button found and initialized');
+					
+					// Check for saved theme preference or use system preference
+					const savedTheme = localStorage.getItem('theme');
+					if (savedTheme) {
+						htmlElement.setAttribute('data-theme', savedTheme);
+					} else {
+						// Check if user prefers dark mode
+						const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+						if (prefersDarkMode) {
+							htmlElement.setAttribute('data-theme', 'dark');
+						}
+					}
+					
+					// Toggle theme when button is clicked - with enhanced logging
+					themeToggle.addEventListener('click', function() {
+						console.log('Theme toggle clicked');
+						const currentTheme = htmlElement.getAttribute('data-theme') || 'light';
+						const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+						
+						htmlElement.setAttribute('data-theme', newTheme);
+						localStorage.setItem('theme', newTheme);
+						
+						console.log(`Theme switched to ${newTheme} mode`);
+					});
 				}
-				anim_container = document.getElementById("animation_container");
-				dom_overlay_container = document.getElementById("dom_overlay_container");
-				var comp=AdobeAn.getComposition("E81AEE61416D73498E951682DDD43845");
-				var lib=comp.getLibrary();
-				var loader = new createjs.LoadQueue(false);
-				loader.addEventListener("fileload", function(evt){handleFileLoad(evt,comp)});
-				loader.addEventListener("complete", function(evt){handleComplete(evt,comp)});
-				var lib=comp.getLibrary();
-				loader.loadManifest(lib.properties.manifest);
-			}
-			function handleFileLoad(evt, comp) {
-					var images=comp.getImages();	
-					if (evt && (evt.item.type == "image")) { images[evt.item.id] = evt.result; }	
-			}
-			function handleComplete(evt,comp) {
-					//This function is always called, irrespective of the content. You can use the variable "stage" after it is created in token create_stage.
-					var lib=comp.getLibrary();
-					var ss=comp.getSpriteSheet();
-					var queue = evt.target;
-					var ssMetadata = lib.ssMetadata;
-					for(i=0; i<ssMetadata.length; i++) {
-								ss[ssMetadata[i].name] = new createjs.SpriteSheet( {"images": [queue.getResult(ssMetadata[i].name)], "frames": ssMetadata[i].frames} )
-							}
-					exportRoot = new lib.VLAB_HTML5Canvas();
-					stage = new lib.Stage(canvas);
-					stage.enableMouseOver();	
-					//Registers the "tick" event listener.
-					fnStartAnimation = function() {
-								stage.addChild(exportRoot);
-								createjs.Ticker.framerate = lib.properties.fps;
-								createjs.Ticker.addEventListener("tick", stage);
-							}	    
-					//Code to support hidpi screens and responsive scaling.
-					AdobeAn.makeResponsive(false,'both',false,1,[canvas,anim_container,dom_overlay_container]);	
-					AdobeAn.compositionLoaded(lib.properties.id);
-					fnStartAnimation();
-			}
-
-			document.getElementById('howToUseBtn').onclick = function() {
-				document.getElementById('howToUseModal').style.display = 'flex';
-			};
-			document.getElementById('closeHowToUse').onclick = function() {
-				document.getElementById('howToUseModal').style.display = 'none';
-			};
-			// Optional: close modal if click outside content
-			document.getElementById('howToUseModal').onclick = function(e) {
-				if (e.target === this) this.style.display = 'none';
-			};
+				
+				// Handle loader
+				const loaderContainer = document.getElementById('loaderContainer');
+				
+				// Hide loader after the simulation is ready or after a timeout
+				function hideLoader() {
+					loaderContainer.classList.add('hidden');
+					setTimeout(() => {
+						loaderContainer.style.display = 'none';
+					}, 500);
+				}
+				
+				// Hide loader when the simulation is ready 
+				// or after 3 seconds (failsafe)
+				window.addEventListener('load', function() {
+					setTimeout(hideLoader, 1000);
+				});
+				setTimeout(hideLoader, 3000);
+				
+				console.log('UI enhancements initialized');
+			});
 		</script>
 	</body>
 </html>
